@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  eda-broker:
+    hostname: eda-broker
+    container_name: eda-broker
+    image: rabbitmq:management-alpine
+    ports:
+       - 5672:5672
+       - 15672:15672
+    volumes:
+         - 'eda-broker-volume:/var/lib/rabbitmq'
+
+
+networks:
+  eda:
+    driver: bridge
+
+volumes:
+  eda-broker-volume:
+    name: eda-broker-volume
