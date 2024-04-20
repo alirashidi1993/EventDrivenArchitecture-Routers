@@ -13,7 +13,7 @@ namespace EDA.Router.Model
 
         public List<string> FindDestinationsFor(T message)
         {
-            var destinations=routingTable.FindDestinationForMessage(message);
+            var destinations=routingTable.FindDestinationsForMessage(message);
             return destinations;
         }
     }

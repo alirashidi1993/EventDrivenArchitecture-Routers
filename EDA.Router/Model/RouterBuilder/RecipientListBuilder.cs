@@ -9,25 +9,18 @@ namespace EDA.Router.Model.RouterBuilder
 
         private RoutingTable<T> routingTable;
         private ICriteria<T> currentCriteria;
-        private IConflictResolvingStrategy<T> conflictResolver;
         public RecipientListBuilder() 
         {
             routingTable = new RoutingTable<T>();
         }
-        public ContentBasedRouter<T> Build()
+        public RecipientListRouter<T> Build()
         {
-            return new ContentBasedRouter<T>(routingTable, conflictResolver);
+            return new RecipientListRouter<T>(routingTable);
         }
 
-        public IRouterConditionBuilder<T> ResolveConflictsWith(IConflictResolvingStrategy<T> strategy)
+        public IRouterConditionBuilder<T> RouteTo(params string[] channelNames)
         {
-            conflictResolver = strategy;
-            return this;
-        }
-
-        public IRouterConditionBuilder<T> RouteTo(string channelName)
-        {
-            var rule = new RoutingRule<T>(currentCriteria, channelName);
+            var rule = new RoutingRule<T>(currentCriteria, channelNames);
             routingTable.AddRule(rule);
             return this;
         }

@@ -1,4 +1,5 @@
 ﻿using EDA.Router.Model.Constants;
+using MoreLinq;
 
 namespace EDA.Router.Model.Rules
 {
@@ -26,11 +27,11 @@ namespace EDA.Router.Model.Rules
             defaultDestination = channelName;
         }
 
-        public List<string> FindDestinationForMessage(T message)
+        public List<string> FindDestinationsForMessage(T message)
         {
             return rules.Where(r=>r.IsSatisfiedByCriteria(message))
-                .Select(r=>r.Destination)
-                .DefaultIfEmpty(defaultDestination)
+                .SelectMany(i=>i.Destinations)
+                .FallbackIfEmpty(defaultDestination)
                 .ToList();
         }
     }
