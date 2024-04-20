@@ -1,5 +1,6 @@
 ﻿using EDA.Messages.PurchaseOrders;
 using EDA.Router.Model;
+using EDA.Router.Model.Extensions;
 using EDA.Router.Model.RouterBuilder;
 using MassTransit;
 
@@ -7,23 +8,36 @@ namespace EDA.Router.Handlers
 {
     public class PlaceOrderHandler : IConsumer<PlaceOrder>
     {
-        private static readonly IContentBasedRouter<PlaceOrder> router;
+        private static readonly IRecipientList<PlaceOrder> router;
 
         static PlaceOrderHandler()
         {
-            router = UseContentBasedRouter.For<PlaceOrder>()
-                .When(m => m.VendorId == 1).RouteTo("queue:Consumer1")
-                .When(m => m.VendorId == 2).RouteTo("queue:Consumer2")
-                .WhenNoCriteriaMatchesRouteTo("queue:Consumer3")
-                .Build();
+            router = UseRecipientList.For<PlaceOrder>()
+            .When(a => a.TotalPriceOfItems().IsInRangeOf(1, 10000))
+            .RouteTo(
+                "queue:Consumer1",
+                "queue:Consumer2"
+                )
+            .When(a => a.TotalPriceOfItems().IsInRangeOf(10001, 20000))
+            .RouteTo(
+                "queue:Consumer2",
+                "queue:Consumer3"
+                )
+            .WhenNoCriteriaMatchesRouteTo("queue:Consumer3")
+            .Build();
         }
-        public Task Consume(ConsumeContext<PlaceOrder> context)
+
+        public async Task Consume(ConsumeContext<PlaceOrder> context)
         {
-            var destination = router.FindDestinationFor(context.Message);
+            var destinations = router.FindDestinationsFor(context.Message);
 
-            Console.WriteLine($"Message Received. Routing the message to : {destination}");
+            Console.WriteLine($"Message Received.");
 
-            return context.Send(new Uri(destination), context.Message);
+            foreach(var dest in destinations)
+            {
+                Console.WriteLine($"Redirecting message to {dest}");
+               await context.Send(new Uri(dest), context.Message);
+            }
         }
     }
 }

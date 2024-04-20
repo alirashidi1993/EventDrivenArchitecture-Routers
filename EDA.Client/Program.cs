@@ -10,28 +10,24 @@ internal class Program
 
     static async Task Main(string[] args)
     {
-        _bus = Bus.Factory.CreateUsingRabbitMq(conf =>
+        _bus = Bus.Factory.CreateUsingRabbitMq(sbc =>
         {
-            conf.Host("localhost");
+            sbc.Host("rabbitmq://localhost");
         });
         await _bus.StartAsync();
 
         while (true)
         {
             Console.Clear();
-            var choice = CommandLine.AskAQuestion(q =>
-            q.About("Select the next action:")
-            .WithChoices("1. Send 'PlaceOrder' Command", "99.Exit")
-            ).GetIndexOfSelectedChoice();
+            var choice = CommandLine.AskAQuestion(a =>
+                a.About("Select the next action:")
+                    .WithChoices(
+                        "1.Send 'PlaceOrder' Command",
+                        "99.Exit"
+                    )).GetIndexOfSelectedChoice();
 
             if (choice == 1)
-            {
                 await SendOrderMessage();
-            }
-            else if(choice==99)
-            {
-                Environment.Exit(1941);
-            }
         }
     }
     private static async Task SendOrderMessage()
@@ -43,10 +39,12 @@ internal class Program
             command = PurchaseOrderFactory.CreateCommand();
             Console.WriteLine(JsonConvert.SerializeObject(command, Formatting.Indented));
 
-            choice = CommandLine.AskAQuestion(q =>
-            q.About("Select the next action:")
-            .WithChoices("1.Send", "2.Regenerate")
-            ).GetIndexOfSelectedChoice();
+            choice = CommandLine.AskAQuestion(a =>
+                a.About("Select the next action:")
+                    .WithChoices(
+                        "1.Send",
+                        "2.Regenerate"
+                    )).GetIndexOfSelectedChoice();
 
             if (choice == 1) break;
 
@@ -55,8 +53,7 @@ internal class Program
 
         var endpoint = await _bus.GetSendEndpoint(new Uri("queue:Router"));
         await endpoint.Send<PlaceOrder>(command);
-
-        Console.WriteLine("Sent to Router!");
+        Console.WriteLine("Sent to Router !");
         Console.WriteLine("------------------------ Press Any Key to Continue ---------------");
         Console.ReadLine();
     }

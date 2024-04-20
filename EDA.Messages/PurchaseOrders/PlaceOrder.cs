@@ -7,5 +7,10 @@
         public DateTime IssueDate { get; set; }
         public List<OrderLine> OrderLines { get; set; }
         public Guid MessageId { get; } = Guid.NewGuid();
+
+        public long TotalPriceOfItems()
+        {
+            return (long)(OrderLines?.Sum(ol => ol.PricePerUnit * ol.Quantity)??0);
+        }
     }
 }

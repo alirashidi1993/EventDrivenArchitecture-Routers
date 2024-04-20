@@ -2,6 +2,6 @@
 {
     public interface IRouterDestinationBuilder<T>
     {
-        IRouterConditionBuilder<T> RouteTo(string channelName);
+        IRouterConditionBuilder<T> RouteTo(params string[] channelNames);
     }
 }

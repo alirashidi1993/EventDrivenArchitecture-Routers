@@ -4,13 +4,13 @@ using EDA.Router.Model.Rules;
 
 namespace EDA.Router.Model.RouterBuilder
 {
-    public class ContentBasedRouterBuilder<T> : IRouterConditionBuilder<T>, IRouterDestinationBuilder<T>
+    public class RecipientListBuilder<T> : IRouterConditionBuilder<T>, IRouterDestinationBuilder<T>
     {
 
         private RoutingTable<T> routingTable;
         private ICriteria<T> currentCriteria;
         private IConflictResolvingStrategy<T> conflictResolver;
-        public ContentBasedRouterBuilder() 
+        public RecipientListBuilder() 
         {
             routingTable = new RoutingTable<T>();
         }

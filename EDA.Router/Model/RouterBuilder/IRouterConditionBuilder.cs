@@ -9,6 +9,6 @@ namespace EDA.Router.Model.RouterBuilder
         IRouterDestinationBuilder<T> When(ICriteria<T> criteria);
         IRouterDestinationBuilder<T> When(Func<T, bool> criteria);
         IRouterConditionBuilder<T> WhenNoCriteriaMatchesRouteTo(string channel);
-        ContentBasedRouter<T> Build();
+        RecipientListRouter<T> Build();
     }
 }
