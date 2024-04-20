@@ -9,6 +9,8 @@ var bus = Bus.Factory.CreateUsingRabbitMq(conf =>
     conf.ReceiveEndpoint("Consumer1", ep =>
     {
         ep.Consumer<PlaceOrderHandler>();
+        ep.Consumer<FlightReservationHandler>();
+        ep.Consumer<HotelReservationHandler>();
     });
 });
 

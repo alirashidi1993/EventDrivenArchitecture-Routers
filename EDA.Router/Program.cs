@@ -1,4 +1,5 @@
-﻿using EDA.Router.Handlers;
+﻿using EDA.Messages.PackageReservation;
+using EDA.Router.Handlers;
 using MassTransit;
 
 var bus = Bus.Factory.CreateUsingRabbitMq(conf =>
@@ -8,6 +9,7 @@ var bus = Bus.Factory.CreateUsingRabbitMq(conf =>
     {
         ep.UseMessageRetry(r => r.Immediate(5));
         ep.Consumer<PlaceOrderHandler>();
+        ep.Consumer<ReservePackageHandler>();
     });
 });
 

@@ -1,29 +1,39 @@
-﻿using EDA.Messages.PurchaseOrders;
-using EDA.Router.Model;
-using EDA.Router.Model.RouterBuilder;
+﻿using EDA.Messages.PackageReservation;
+using EDA.Messages.PurchaseOrders;
+using EDA.Router.Splitters.Iterating;
 using MassTransit;
 
 namespace EDA.Router.Handlers
 {
     public class PlaceOrderHandler : IConsumer<PlaceOrder>
     {
-        private static readonly IContentBasedRouter<PlaceOrder> router;
+        private static readonly IteratingSplitter<PlaceOrder, PlaceOrder> splitter;
 
         static PlaceOrderHandler()
         {
-            router = UseContentBasedRouter.For<PlaceOrder>()
-                .When(m => m.VendorId == 1).RouteTo("queue:Consumer1")
-                .When(m => m.VendorId == 2).RouteTo("queue:Consumer2")
-                .WhenNoCriteriaMatchesRouteTo("queue:Consumer3")
-                .Build();
+            splitter = CreateIteratingSplitter
+                    .Which()
+                    .TakesInput<PlaceOrder>()
+                    .Produces<PlaceOrder>()
+                    .SplitBasedOn(a => a.OrderLines.Count)
+                    .UsingConverter((input, index) => new PlaceOrder
+                    {
+                        VendorId = input.VendorId,
+                        IssueDate = input.IssueDate,
+                        OrderNumber = input.OrderNumber,
+                        OrderLines = new List<OrderLine> { input.OrderLines[index] }
+                    })
+                    .Build();
         }
-        public Task Consume(ConsumeContext<PlaceOrder> context)
+
+        public async Task Consume(ConsumeContext<PlaceOrder> context)
         {
-            var destination = router.FindDestinationFor(context.Message);
-
-            Console.WriteLine($"Message Received. Routing the message to : {destination}");
-
-            return context.Send(new Uri(destination), context.Message);
+            var messageSegments = splitter.Split(context.Message);
+            foreach(var segment in messageSegments)
+            {
+                await context.Send(new Uri("queue:Consumer1"), segment);
+            }
         }
     }
+   
 }
